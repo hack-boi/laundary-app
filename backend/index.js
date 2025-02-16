@@ -3,7 +3,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 
-const twilioRouter = require('./src/routes/twilio-sms');
+const authRouter = require('./src/routes/auth');
 const app = express();
 
 const port = process.env.PORT || 8080;
@@ -11,7 +11,7 @@ const port = process.env.PORT || 8080;
 app.use(cors());
 app.use(bodyParser.json());
 
-app.use('/twilio-sms', twilioRouter);
+app.use('/auth', authRouter);
 
 app.get('/', (req, res) => {
     console.log("Hello World");
