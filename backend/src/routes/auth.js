@@ -1,15 +1,15 @@
 const express = require("express");
 const { body, validationResult } = require('express-validator');
 const { sendOTP, verifyOTP } = require("../controllers/authController");
-import { rateLimit } from 'express-rate-limit'
+const { rateLimit } = require('express-rate-limit');
 
 const router = express.Router();
 
 const otpLimiter = rateLimit({
-	windowMs: 15 * 60 * 1000,
-	limit: 100,
-	standardHeaders: 'draft-8',
-	legacyHeaders: false
+    windowMs: 15 * 60 * 1000,
+    limit: 100,
+    standardHeaders: 'draft-8',
+    legacyHeaders: false
 })
 
 // Route to send OTP
