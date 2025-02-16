@@ -1,16 +1,17 @@
 const { TWILIO_SERVICE_SID, TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN } = process.env;
-
-const client = require("twilio")(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, {
-    lazyLoading: true,
-});
+const client = require("twilio")(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, { lazyLoading: true });
+const { validationResult } = require('express-validator');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 
 const sendOTP = async (req, res) => {
     try {
-        const { countryCode, phoneNumber } = req.body;
-
-        if (!countryCode || !phoneNumber) {
-            return res.status(400).json({ success: false, message: "Country code and phone number are required." });
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ success: false, message: "Validation failed", errors: errors.array() });
         }
+
+        const { countryCode, phoneNumber } = req.body;
 
         const otpResponse = await client.verify.v2.services(TWILIO_SERVICE_SID).verifications.create({
             to: `+${countryCode}${phoneNumber}`,
@@ -25,21 +26,21 @@ const sendOTP = async (req, res) => {
 
     } catch (error) {
         console.error("Twilio Error:", error.stack || error.message);
-        return res.status(error?.status || 500).json({
+        return res.status(500).json({
             success: false,
             message: "Failed to send OTP. Please try again.",
-            error: error.message || "Unknown error",
         });
     }
 };
 
 const verifyOTP = async (req, res) => {
     try {
-        const { countryCode, phoneNumber, otp } = req.body;
-
-        if (!countryCode || !phoneNumber || !otp) {
-            return res.status(400).json({ success: false, message: "Country code, phone number, and OTP are required." });
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ success: false, message: "Validation failed", errors: errors.array() });
         }
+
+        const { countryCode, phoneNumber, otp } = req.body;
 
         const verificationResponse = await client.verify.v2.services(TWILIO_SERVICE_SID).verificationChecks.create({
             to: `+${countryCode}${phoneNumber}`,
@@ -50,18 +51,21 @@ const verifyOTP = async (req, res) => {
             return res.status(400).json({ success: false, message: "Invalid OTP. Please try again." });
         }
 
+        const hashedPhoneNumber = await bcrypt.hash(`${countryCode}${phoneNumber}`, 10);
+        const token = jwt.sign({ phoneNumber: hashedPhoneNumber }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
         return res.status(200).json({
             success: true,
             message: "OTP verified successfully!",
             details: verificationResponse,
+            token: token,
         });
 
     } catch (error) {
         console.error("Twilio Verification Error:", error.stack || error.message);
-        return res.status(error?.status || 500).json({
+        return res.status(500).json({
             success: false,
             message: "Failed to verify OTP. Please try again.",
-            error: error.message || "Unknown error",
         });
     }
 };
