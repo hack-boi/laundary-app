@@ -32,6 +32,7 @@ const UserAuthForm = ({ type }) => {
         let serverRoute = type == "login" ? "/api/auth/login" : "/api/auth/register";
 
         let passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,20}$/;
+        let mobileRegex = /^[6-9]\d{9}$/;
 
         let form = new FormData(formElement);
         let formData = {};
@@ -47,13 +48,19 @@ const UserAuthForm = ({ type }) => {
                 return toast.error("Full name should be atleast 3 letters long");
             }
         }
+
         if (mobile.length !== 10) {
             return toast.error("Mobile number should be 10 digits long");
+        }
+
+        if (!mobileRegex.test(mobile)) {
+            return toast.error("Enter a valid mobile number");
         }
 
         if (!passwordRegex.test(password)) {
             return toast.error("Password should be atleast 8 characters long and contain atleast one uppercase letter, one lowercase letter and one number");
         }
+
         userAuthThroughServer(serverRoute, formData);
     }
 
@@ -113,7 +120,7 @@ const UserAuthForm = ({ type }) => {
                                 :
                                 <p className="mt-6 text-gray-700 text-xl text-center">
                                     Already a member ?
-                                    <Link to="/login" className="text-black text-xl ml-1 underline">
+                                    <Link to="/" className="text-black text-xl ml-1 underline">
                                         Sign in here
                                     </Link>
                                 </p>

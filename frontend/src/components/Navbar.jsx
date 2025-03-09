@@ -8,7 +8,7 @@ const Navbar = () => {
     const [searchBoxVisibility, setSearchBoxVisibility] = useState(false);
     const [userNavPanel, setUserNavPanel] = useState(false);
 
-    const { userAuth, userAuth: { access_token, profile_img } } = useContext(UserContext);
+    const { userAuth, userAuth: { access_token, profile_img, role } } = useContext(UserContext);
 
     const handleUserNavPanel = () => {
         setUserNavPanel(currentVal => !currentVal);
@@ -24,7 +24,7 @@ const Navbar = () => {
         <>
             <nav className="navbar">
                 <Link to="/" className="flex-none w-10">
-                    <img src="logo.png" alt="" className="w-full" />
+                    <i className={"fi fi-rr-" + (role ? 'admin' : 'user') + " text-3xl text-black"}></i>
                 </Link>
                 <div className={"absolute bg-white w-full left-0 top-full mt-0.5 border-b border-gray-200 py-4 px-[5vw] md:border-0 md:relative md:inset-0 md:p-0 md:w-auto " + (searchBoxVisibility ? "show" : "hidden md:block")}
                 >
@@ -41,20 +41,9 @@ const Navbar = () => {
                         <i className="fi fi-rr-search text-xl"></i>
                     </button>
 
-                    <Link to="/editor" className="hidden md:flex items-center gap-2 text-gray-700 hover:text-black hover:bg-gray-200 p-3 px-4 rounded-lg transition">
-                        <i className="fi fi-rr-file-edit"></i>
-                        <p>Write</p>
-                    </Link>
-
                     {
                         access_token ?
                             <>
-                                <Link to="/dashboard/notification">
-                                    <button className="w-12 h-12 rounded-full bg-gray-200 relative hover:bg-black/10">
-                                        <i className="fi fi-rr-bell text-2xl block mt-1"></i>
-                                    </button>
-                                </Link>
-
                                 <div className="relative" onClick={handleUserNavPanel} onBlur={handleBlur}>
                                     <button className="w-12 h-12 mt-1">
                                         <img src={profile_img} alt="" className="w-full h-full object-cover rounded-full" />
@@ -72,7 +61,7 @@ const Navbar = () => {
                                 <Link className="bg-black text-white py-2 px-5 rounded-full hover:bg-gray-800 transition" to="/login">
                                     Login
                                 </Link>
-                                <Link className="bg-gray-200 text-gray-800 py-2 px-5 rounded-full hidden md:block hover:bg-gray-300 transition" to="/signup">
+                                <Link className="bg-gray-200 text-gray-800 py-2 px-5 rounded-full hidden md:block hover:bg-gray-300 transition" to="/register">
                                     Sign Up
                                 </Link>
                             </>

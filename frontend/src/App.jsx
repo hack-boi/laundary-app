@@ -3,6 +3,8 @@ import Navbar from "./components/Navbar";
 import UserAuthForm from "./pages/UserAuthForm";
 import { createContext, useEffect, useState } from "react";
 import { lookInSession } from "./common/session";
+import Home from "./pages/Home";
+import Footer from "./components/Footer";
 
 export const UserContext = createContext({});
 
@@ -17,12 +19,24 @@ function App() {
 
   return (
     <UserContext.Provider value={{ userAuth, setUserAuth }}>
-      <Routes>
-        <Route path="/" element={<Navbar />}>
-          <Route path="login" element={<UserAuthForm type="login" />} />
-          <Route path="register" element={<UserAuthForm type="register" />} />
-        </Route>
-      </Routes>
+      <div className="flex flex-col min-h-screen">
+        {userAuth.access_token && <Navbar />}
+
+        <div className="flex-1">
+          <Routes>
+            {
+              userAuth.access_token ? (
+                <Route path="/" element={<Home />} />
+              ) : (
+                <Route path="/" element={<UserAuthForm type="login" />} />
+              )
+            }
+            <Route path="/register" element={<UserAuthForm type="register" />} />
+          </Routes>
+        </div>
+
+        {userAuth.access_token && <Footer />}
+      </div>
     </UserContext.Provider>
   )
 }
