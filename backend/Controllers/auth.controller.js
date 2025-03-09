@@ -1,5 +1,5 @@
 import bcrypt from 'bcrypt';
-import { generateToken, passwordRegex } from '../utils/helpers.js';
+import { generateToken, mobileRegex, passwordRegex } from '../utils/helpers.js';
 
 import User from '../Models/user.model.js';
 
@@ -9,9 +9,15 @@ export const register = async (req, res) => {
     if (fullname.length < 3) {
         return res.status(400).json({ error: "Fullname must be at least 3 characters long" });
     }
+
     if (mobile.length !== 10) {
         return res.status(400).json({ error: "Mobile number must be 10 digits long" });
     }
+
+    if (!mobileRegex.test(mobile)) {
+        return res.status(400).json({ error: "Enter a valid mobile number" });
+    }
+
     if (!passwordRegex.test(password)) {
         return res.status(400).json({ error: "Password must be 8 to 20 characters long and contain at least one numeric digit, one uppercase and one lowercase letter" });
     }
