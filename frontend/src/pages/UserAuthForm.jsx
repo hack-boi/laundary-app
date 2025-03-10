@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { Toaster, toast } from "react-hot-toast";
 
@@ -10,7 +10,13 @@ import AnimationWrapper from "../common/page-animation";
 
 const UserAuthForm = ({ type }) => {
 
+    let [selectedRole, setSelectedRole] = useState("user");
     let { userAuth: { access_token }, setUserAuth } = useContext(UserContext);
+
+    const handleSelectRole = (e) => {
+        e.preventDefault();
+        setSelectedRole(e.target.value);
+    }
 
     const userAuthThroughServer = async (serverRoute, formData) => {
         axios.post(import.meta.env.VITE_SERVER_DOMAIN + serverRoute, formData)
@@ -26,6 +32,7 @@ const UserAuthForm = ({ type }) => {
                 toast.error(response.data.error);
             })
     }
+
     const handleSubmit = (e) => {
         e.preventDefault();
 
@@ -41,11 +48,21 @@ const UserAuthForm = ({ type }) => {
             formData[key] = value;
         }
 
-        let { fullname, mobile, password } = formData;
+        let { fullname, role, adminKey, mobile, password } = formData;
 
-        if (fullname) {
+        if (type !== "login") {
             if (fullname.length < 3) {
                 return toast.error("Full name should be atleast 3 letters long");
+            }
+
+            if (role === "admin") {
+                if (!adminKey) {
+                    return toast.error("Admin key is required");
+                }
+
+                if (adminKey !== import.meta.env.VITE_SECRET_ADMIN_KEY) {
+                    return toast.error("Invalid admin key");
+                }
             }
         }
 
@@ -64,71 +81,91 @@ const UserAuthForm = ({ type }) => {
         userAuthThroughServer(serverRoute, formData);
     }
 
+    if (access_token) return <Navigate to="/" />;
+
     return (
-        access_token ?
-            <Navigate to="/" />
-            :
-            <AnimationWrapper keyValue={type}>
-                <section className="py-4 px-[5vw] md:px-[7vw] lg:px-[10vw] h-cover flex items-center justify-center">
-                    <Toaster />
-                    <form id="formElement" className="w-[80%] max-w-[400px]">
-                        <h1 className="text-4xl font-gelasio capitalize text-center mb-24">
-                            {type === "login" ? "Welcome back" : "Join us today"}
-                        </h1>
+        <AnimationWrapper keyValue={type}>
+            <section className="py-4 px-[5vw] md:px-[7vw] lg:px-[10vw] min-h-screen flex items-center justify-center">
+                <Toaster />
+                <form className="w-[80%] max-w-[400px]" onSubmit={handleSubmit} id="formElement">
+                    <h1 className="text-4xl font-gelasio capitalize text-center mb-24">
+                        {type === "login" ? "Welcome back" : "Join us today"}
+                    </h1>
 
-                        {
-                            type !== "login" ?
-                                <InputBox
-                                    name="fullname"
-                                    type="text"
-                                    placeholder="Full Name"
-                                    icon="fi-rr-user"
-                                />
-                                : ""
-                        }
+                    {type !== "login" && (
+                        <>
+                            <InputBox
+                                name="fullname"
+                                type="text"
+                                placeholder="Full Name"
+                                icon="fi-rr-user"
+                            />
 
-                        <InputBox
-                            name="mobile"
-                            type="text"
-                            placeholder="Mobile Number (10 digits)"
-                            icon="fi-rr-smartphone"
-                        />
+                            <div className="relative w-[100%] mb-4">
+                                <select name="role" className="input-box" onChange={handleSelectRole}>
+                                    <option value="user">User</option>
+                                    <option value="admin">Admin</option>
+                                </select>
+                                <i className="fi fi-rr-user-add input-icon">
+                                </i>
+                            </div>
 
-                        <InputBox
-                            name="password"
-                            type="password"
-                            placeholder="Password"
-                            icon="fi-rr-key"
-                        />
+                            {/* Ask for admin key on selecting the role as admin */}
+                            {
+                                selectedRole === "admin" && (
+                                    <InputBox
+                                        type="password"
+                                        name="adminKey"
+                                        placeholder="Admin Key"
+                                        icon="fi-rr-key"
+                                    />
+                                )
+                            }
+                        </>
+                    )}
 
-                        <button
-                            className="btn-dark center mt-14"
-                            type="submit"
-                            onClick={handleSubmit}
-                        >
-                            {type === "login" ? "Login" : "Sign Up"}
-                        </button>
+                    <InputBox
+                        name="mobile"
+                        type="text"
+                        placeholder="Mobile Number (10 digits)"
+                        icon="fi-rr-smartphone"
+                    />
 
-                        {
-                            type === "login" ?
-                                <p className="mt-6 text-gray-700 text-xl text-center">
-                                    Don't have an account ?
-                                    <Link to="/register" className="text-black text-xl ml-1 underline">
-                                        Join us today
-                                    </Link>
-                                </p>
-                                :
-                                <p className="mt-6 text-gray-700 text-xl text-center">
-                                    Already a member ?
-                                    <Link to="/" className="text-black text-xl ml-1 underline">
-                                        Sign in here
-                                    </Link>
-                                </p>
-                        }
-                    </form>
-                </section>
-            </AnimationWrapper>
-    )
-}
+                    <InputBox
+                        name="password"
+                        type="password"
+                        placeholder="Password"
+                        icon="fi-rr-key"
+                    />
+
+                    <button
+                        className="btn-dark center mt-14"
+                        type="submit"
+                    >
+                        {type === "login" ? "Login" : "Register"}
+                    </button>
+
+                    <p className="mt-6 text-gray-700 text-xl text-center">
+                        {type === "login" ? (
+                            <>
+                                Don't have an account?
+                                <Link to="/register" className="text-black text-xl ml-1 underline">
+                                    Join us today
+                                </Link>
+                            </>
+                        ) : (
+                            <>
+                                Already a member?
+                                <Link to="/" className="text-black text-xl ml-1 underline">
+                                    Sign in here
+                                </Link>
+                            </>
+                        )}
+                    </p>
+                </form>
+            </section>
+        </AnimationWrapper>
+    );
+};
 
 export default UserAuthForm;

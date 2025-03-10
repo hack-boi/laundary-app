@@ -5,6 +5,8 @@ import { createContext, useEffect, useState } from "react";
 import { lookInSession } from "./common/session";
 import Home from "./pages/Home";
 import Footer from "./components/Footer";
+import NewOrder from "./pages/NewOrder";
+import OrderStatus from "./pages/OrderStatus";
 
 export const UserContext = createContext({});
 
@@ -32,6 +34,8 @@ function App() {
               )
             }
             <Route path="/register" element={<UserAuthForm type="register" />} />
+            <Route path="/new-order" element={<NewOrder />} />
+            <Route path="/order/:orderId" element={<OrderStatus />} />
           </Routes>
         </div>
 
