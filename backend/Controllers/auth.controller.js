@@ -4,7 +4,7 @@ import { generateToken, mobileRegex, passwordRegex } from '../utils/helpers.js';
 import User from '../Models/user.model.js';
 
 export const register = async (req, res) => {
-    let { fullname, mobile, password } = req.body;
+    let { fullname, role, mobile, password } = req.body;
 
     if (fullname.length < 3) {
         return res.status(400).json({ error: "Fullname must be at least 3 characters long" });
@@ -22,6 +22,10 @@ export const register = async (req, res) => {
         return res.status(400).json({ error: "Password must be 8 to 20 characters long and contain at least one numeric digit, one uppercase and one lowercase letter" });
     }
 
+    if (role === "admin") {
+        role = 1;
+    }
+
     try {
         const hashed_password = await bcrypt.hash(password, 10);
 
@@ -30,12 +34,14 @@ export const register = async (req, res) => {
                 fullname,
                 mobile,
                 password: hashed_password
-            }
+            },
+            role,
         });
 
         const savedUser = await user.save();
         return res.status(201).json(generateToken(savedUser));
     } catch (error) {
+        if (error.code === 11000) return res.status(409).json({ error: "User with this number already exists" });
         return res.status(500).json({ error: error.message });
     }
 }
@@ -59,3 +65,27 @@ export const login = async (req, res) => {
         return res.status(500).json({ error: error.message });
     }
 }
+
+export const getCustomer = async (req, res) => {
+    const { customer_id } = req.query;
+
+    if (!customer_id) {
+        return res.status(400).json({ error: "Customer ID is required" });
+    }
+
+    try {
+        const user = await User.findById(customer_id, { "personal_info.password": 0 });
+
+        if (!user) {
+            return res.status(404).json({ error: "Customer not found" });
+        }
+
+        return res.status(200).json({
+            fullname: user.personal_info.fullname,
+            mobile: user.personal_info.mobile,
+            profile_img: user.personal_info.profile_img
+        });
+    } catch (error) {
+        return res.status(500).json({ error: "Internal server error" });
+    }
+};

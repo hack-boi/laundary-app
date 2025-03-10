@@ -27,7 +27,8 @@ const OrderSchema = new Schema(
     },
     {
         timestamps: {
-            createdAt: 'publishedAt'
+            createdAt: 'publishedAt',
+            updatedAt: 'updatedAt'
         }
     }
 )

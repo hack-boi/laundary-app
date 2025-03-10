@@ -5,7 +5,7 @@ export const mobileRegex = /^[6-9]\d{9}$/;
 
 export const generateToken = (user) => {
 
-    const access_token = jwt.sign({ id: user._id }, process.env.SECRET_ACCESS_KEY, { expiresIn: "7d" });
+    const access_token = jwt.sign({ id: user._id, role: user.role }, process.env.SECRET_ACCESS_KEY, { expiresIn: "30d" });
     return {
         access_token,
         profile_img: user.personal_info.profile_img,
@@ -23,6 +23,8 @@ export const formattedData = (orders) => {
             des: order.des,
             order_status: order.order_status,
             created_at: order.publishedAt,
+            updated_at: order.updatedAt,
+            customer_id: order.customer
         }
     })
 }
