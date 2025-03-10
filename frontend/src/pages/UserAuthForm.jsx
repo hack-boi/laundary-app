@@ -106,8 +106,7 @@ const UserAuthForm = ({ type }) => {
                                     <option value="user">User</option>
                                     <option value="admin">Admin</option>
                                 </select>
-                                <i className="fi fi-rr-user-add input-icon">
-                                </i>
+                                <i className={"fi fi-rr-" + (selectedRole === "admin"? "admin": "user") + " input-icon"}></i>
                             </div>
 
                             {/* Ask for admin key on selecting the role as admin */}
