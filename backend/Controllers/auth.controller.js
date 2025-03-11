@@ -24,6 +24,8 @@ export const register = async (req, res) => {
 
     if (role === "admin") {
         role = 1;
+    } else {
+        role = 0;
     }
 
     try {
