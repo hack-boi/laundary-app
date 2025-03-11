@@ -105,7 +105,7 @@ const OrderStatusTimeline = ({ currentStatus }) => {
                                     ) : null
                                 }
                                 <button
-                                    className="btn-dark shadow-md"
+                                    className="btn-dark shadow-md bg-red-500"
                                     onClick={handleCancelOrder}
                                 >
                                     Cancel
